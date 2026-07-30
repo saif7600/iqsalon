@@ -1,0 +1,8 @@
+[Unit]
+Description=AtiqSalon PostgreSQL backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atiqsalon-backup
+User=root
+

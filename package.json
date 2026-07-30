@@ -1,0 +1,28 @@
+{
+  "name": "atiqsalon-ai",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build && dotnet build apps/api/AtiqSalon.slnx --no-restore",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test && dotnet test apps/api/AtiqSalon.slnx --no-restore",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "api:restore": "dotnet restore apps/api/AtiqSalon.slnx",
+    "api:dev": "dotnet watch --project apps/api/src/AtiqSalon.Api",
+    "db:migrate": "dotnet ef database update --project apps/api/src/AtiqSalon.Api",
+    "db:migration": "dotnet ef migrations add --project apps/api/src/AtiqSalon.Api",
+    "db:seed": "dotnet run --project apps/api/src/AtiqSalon.Api -- --seed-development",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.8.0"
+  }
+}

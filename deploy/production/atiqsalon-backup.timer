@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily AtiqSalon PostgreSQL backup
+
+[Timer]
+OnCalendar=*-*-* 02:30:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+
+[Install]
+WantedBy=timers.target
+

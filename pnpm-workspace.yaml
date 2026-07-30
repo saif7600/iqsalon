@@ -1,0 +1,6 @@
+packages:
+  - "apps/web"
+  - "apps/portal"
+  - "apps/customer"
+  - "apps/staff"
+  - "packages/*"

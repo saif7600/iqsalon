@@ -1,0 +1,186 @@
+:root {
+  --ink: #1c2823;
+  --muted: #627068;
+  --paper: #f2eee5;
+  --card: #fffdf8;
+  --line: #d8d2c6;
+  --accent: #b75432;
+  --sage: #cdd8c8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-body), sans-serif;
+  background:
+    radial-gradient(circle at 90% 5%, #e3cbb9 0, transparent 30rem),
+    linear-gradient(145deg, #f7f4ec 0%, var(--paper) 60%);
+}
+
+a {
+  color: inherit;
+}
+
+.mobile-shell,
+.offline-page {
+  width: min(100%, 46rem);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem
+    max(6rem, calc(5rem + env(safe-area-inset-bottom)));
+}
+
+.app-bar,
+.brand,
+.status-card > div,
+.bottom-nav {
+  display: flex;
+  align-items: center;
+}
+
+.app-bar {
+  justify-content: space-between;
+  min-height: 3rem;
+}
+
+.brand {
+  gap: 0.6rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.brand span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 50%;
+  color: white;
+  background: var(--ink);
+  font-family: var(--font-display), serif;
+}
+
+.channel-label,
+.eyebrow {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero {
+  padding: clamp(4rem, 13vh, 8rem) 0 3rem;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-weight: 600;
+  line-height: 0.98;
+}
+
+h1 {
+  max-width: 11ch;
+  font-size: clamp(3rem, 13vw, 5.7rem);
+  letter-spacing: -0.055em;
+}
+
+h2 {
+  font-size: clamp(1.7rem, 7vw, 2.5rem);
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.hero > p:last-child {
+  max-width: 37rem;
+  margin-top: 1.5rem;
+}
+
+.status-card {
+  padding: 1.35rem;
+  border: 1px solid var(--line);
+  border-radius: 1.4rem;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: 0 1rem 3rem rgb(50 45 35 / 8%);
+}
+
+.status-card > div {
+  gap: 0.5rem;
+}
+
+.status-card .eyebrow {
+  margin: 0;
+}
+
+.status-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.status-card h2 {
+  margin-top: 1rem;
+}
+
+.bottom-nav {
+  position: fixed;
+  right: 0.8rem;
+  bottom: max(0.8rem, env(safe-area-inset-bottom));
+  left: 0.8rem;
+  z-index: 10;
+  width: min(calc(100% - 1.6rem), 44rem);
+  min-height: 4rem;
+  margin: auto;
+  justify-content: space-around;
+  border: 1px solid var(--line);
+  border-radius: 1.2rem;
+  background: rgb(255 253 248 / 94%);
+  backdrop-filter: blur(16px);
+}
+
+.bottom-nav a,
+.bottom-nav span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.bottom-nav [aria-disabled="true"] {
+  color: #a29e96;
+}
+
+.offline-page {
+  display: grid;
+  align-content: center;
+}
+
+.retry {
+  width: fit-content;
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 0.7rem;
+  color: white;
+  background: var(--ink);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@media (min-width: 48rem) {
+  .status-card {
+    padding: 2rem;
+  }
+}

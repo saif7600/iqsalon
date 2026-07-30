@@ -1,0 +1,3 @@
+.deploy/
+apps/portal/test-results/
+apps/portal/playwright-report/

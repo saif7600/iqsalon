@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AtiqSalon.Api/AtiqSalon.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AtiqSalon.Api.Tests/AtiqSalon.Api.Tests.csproj" />
+  </Folder>
+</Solution>

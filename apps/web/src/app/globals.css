@@ -1,0 +1,186 @@
+@import "@atiqsalon/ui/styles.css";
+html {
+  scroll-behavior: smooth;
+}
+.announcement {
+  background: var(--ink);
+  color: white;
+  text-align: center;
+  padding: 0.55rem;
+  font-size: 0.85rem;
+}
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(248, 243, 237, 0.92);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+.nav {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.wordmark {
+  font-size: 1.35rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.nav-links {
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.hero {
+  padding: 7rem 0 4rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 85% 15%, #eddde1 0, transparent 30%),
+    linear-gradient(180deg, #fffaf5, transparent);
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 4rem;
+  align-items: center;
+}
+.hero h1 {
+  font-size: clamp(3.6rem, 8vw, 7rem);
+  line-height: 0.87;
+  letter-spacing: -0.065em;
+  margin: 0.5rem 0 1.5rem;
+}
+.lead {
+  font-size: 1.15rem;
+  max-width: 620px;
+}
+.actions {
+  display: flex;
+  gap: 0.8rem;
+  margin-top: 1.7rem;
+}
+.dashboard {
+  position: relative;
+  padding: 1rem;
+  border-radius: 28px;
+  background: #282827;
+  color: white;
+  box-shadow: 0 30px 80px #9d7b7450;
+  transform: rotate(1deg);
+}
+.dash-top,
+.dash-grid,
+.section-grid,
+.price-grid {
+  display: grid;
+  gap: 1rem;
+}
+.dash-top {
+  grid-template-columns: 2fr 1fr;
+}
+.dash-grid {
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 1rem;
+}
+.dash-panel {
+  background: #373735;
+  padding: 1.2rem;
+  border-radius: 18px;
+}
+.dash-panel b {
+  display: block;
+  font-size: 1.6rem;
+}
+.section {
+  padding: 6rem 0;
+}
+.section h2 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 1;
+  max-width: 760px;
+}
+.section-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+.section-grid .card {
+  min-height: 210px;
+}
+.band {
+  background: #2e4138;
+  color: white;
+}
+.price-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+.faq details {
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.footer {
+  padding: 4rem 0;
+  background: #211f1e;
+  color: #eee5dc;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 2rem;
+}
+.route-page {
+  padding: 7rem 0;
+  min-height: 65vh;
+}
+.route-page .content {
+  max-width: 760px;
+}
+.route-page h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  line-height: 0.95;
+}
+.rtl {
+  direction: rtl;
+}
+.steps {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
+}
+.step {
+  border: 1px solid var(--line);
+  background: var(--white);
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+}
+.step[aria-current="step"] {
+  background: var(--ink);
+  color: white;
+}
+.booking-form {
+  display: grid;
+  gap: 1rem;
+}
+@media (max-width: 850px) {
+  .nav-links a:not(.button) {
+    display: none;
+  }
+  .hero-grid,
+  .section-grid,
+  .price-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding-top: 4rem;
+  }
+  .dashboard {
+    transform: none;
+  }
+  .section {
+    padding: 4rem 0;
+  }
+}

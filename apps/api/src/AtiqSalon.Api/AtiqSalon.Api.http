@@ -1,0 +1,6 @@
+@AtiqSalon.Api_HostAddress = http://localhost:5255
+
+GET {{AtiqSalon.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,8 @@
+[Unit]
+Description=AtiqSalon public health monitor
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atiqsalon-health
+User=nobody
+
