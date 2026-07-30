@@ -2,10 +2,13 @@ using AtiqSalon.Api.Data;
 using AtiqSalon.Api.Domain;
 using AtiqSalon.Api.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace AtiqSalon.Api.Application;
 
-public sealed class SaasAdministrationService(AppDbContext db, TenantContext tenant)
+public sealed class SaasAdministrationService(AppDbContext db, TenantContext tenant, IPasswordHasher<User> hasher)
 {
     public async Task<object> GetOverviewAsync(CancellationToken ct)
     {
@@ -35,6 +38,121 @@ public sealed class SaasAdministrationService(AppDbContext db, TenantContext ten
             userCount = users.Count(y => y.TenantId == x.Id),
             subscriptionStatus = subscriptions.Where(y => y.TenantId == x.Id && SaasSubscriptionStatuses.Current.Contains(y.Status)).Select(y => y.Status).FirstOrDefault()
         }).Cast<object>().ToArrayAsync(ct);
+    }
+
+    public async Task<(object? Result, string? Error)> ProvisionTenantAsync(ProvisionTenantRequest request, CancellationToken ct)
+    {
+        var tenantName = request.TenantName.Trim();
+        var legalName = request.LegalName.Trim();
+        var tradingName = request.TradingName.Trim();
+        var ownerName = request.OwnerName.Trim();
+        var ownerEmail = request.OwnerEmail.Trim().ToLowerInvariant();
+        var branchName = request.BranchName.Trim();
+        var branchCode = request.BranchCode.Trim().ToUpperInvariant();
+        var country = request.CountryCode.Trim().ToUpperInvariant();
+        var currency = request.CurrencyCode.Trim().ToUpperInvariant();
+        var language = request.Language.Trim().ToLowerInvariant();
+        var timeZone = request.TimeZone.Trim();
+        var billingInterval = request.BillingInterval.Trim().ToLowerInvariant();
+        if (tenantName.Length is < 2 or > 120 || legalName.Length is < 2 or > 160 || tradingName.Length is < 2 or > 160)
+            return (null, "Tenant, legal, and trading names are required.");
+        if (ownerName.Length is < 2 or > 120 || !ownerEmail.Contains('@'))
+            return (null, "A valid owner name and email are required.");
+        if (branchName.Length is < 2 or > 120 || branchCode.Length is < 2 or > 20)
+            return (null, "A valid initial branch name and code are required.");
+        if (country.Length != 2 || currency.Length != 3 || string.IsNullOrWhiteSpace(timeZone))
+            return (null, "Country, currency, and timezone are required.");
+        if (request.PlanId.HasValue && !SaasBillingIntervals.All.Contains(billingInterval))
+            return (null, "A valid billing interval is required.");
+
+        var slugBase = Slug.Create(tenantName);
+        if (string.IsNullOrWhiteSpace(slugBase)) return (null, "Tenant name must contain letters or numbers.");
+        var slug = slugBase;
+        for (var suffix = 2; await db.Tenants.IgnoreQueryFilters().AnyAsync(x => x.Slug == slug, ct); suffix++)
+            slug = $"{slugBase[..Math.Min(slugBase.Length, 70)]}-{suffix}";
+        if (await db.Users.IgnoreQueryFilters().AnyAsync(x => x.NormalizedEmail == ownerEmail, ct))
+            return (null, "The owner email is already assigned to an account.");
+
+        SaasPlan? plan = null;
+        if (request.PlanId.HasValue)
+        {
+            plan = await db.SaasPlans.SingleOrDefaultAsync(x => x.Id == request.PlanId && x.Status == SaasPlanStatuses.Active, ct);
+            if (plan is null) return (null, "The selected plan is not active.");
+        }
+
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
+        var tenantRecord = new Tenant { Name = tenantName, Slug = slug, Status = "active" };
+        var organization = new Organization
+        {
+            TenantId = tenantRecord.Id, LegalName = legalName, TradingName = tradingName, Slug = slug,
+            Email = ownerEmail, CountryCode = country, DefaultCurrency = currency,
+            DefaultLanguage = language, TimeZone = timeZone, Status = "active"
+        };
+        var branch = new Branch
+        {
+            TenantId = tenantRecord.Id, OrganizationId = organization.Id, Name = branchName,
+            Code = branchCode, City = string.IsNullOrWhiteSpace(request.City) ? null : request.City.Trim(),
+            CountryCode = country, TimeZone = timeZone, IsActive = true
+        };
+        var invitationToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var invitationHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(invitationToken)));
+        var owner = new User
+        {
+            TenantId = tenantRecord.Id, Email = ownerEmail, NormalizedEmail = ownerEmail,
+            DisplayName = ownerName, Status = "invited", EmailVerified = false,
+            EmailVerificationToken = invitationHash, Roles = ["OrganizationOwner"]
+        };
+        owner.PasswordHash = hasher.HashPassword(owner, Convert.ToHexString(RandomNumberGenerator.GetBytes(48)));
+        var assignment = new UserBranchAssignment
+        {
+            TenantId = tenantRecord.Id, UserId = owner.Id, OrganizationId = organization.Id,
+            BranchId = branch.Id, IsActive = true
+        };
+        var invitationPath = $"/accept-invitation?token={Uri.EscapeDataString(invitationToken)}";
+        db.AddRange(
+            tenantRecord, organization, branch, owner, assignment,
+            new NotificationMessage
+            {
+                TenantId = tenantRecord.Id, OrganizationId = organization.Id, BranchId = branch.Id,
+                Channel = "Email", TemplateCode = "tenant-owner-invitation", Recipient = ownerEmail,
+                Subject = "Activate your AtiqSalon account",
+                Body = $"You have been invited to manage {tradingName}. Set your password: {invitationPath}",
+                Status = "Pending", IdempotencyKey = $"tenant-owner-invite:{owner.Id}"
+            },
+            new AuditEvent
+            {
+                TenantId = tenantRecord.Id, OrganizationId = organization.Id, ActorUserId = tenant.UserId,
+                Action = "tenant.provisioned", EntityType = "Tenant", EntityId = tenantRecord.Id.ToString(),
+                Source = "platform", OccurredAtUtc = DateTimeOffset.UtcNow
+            });
+
+        SaasSubscription? subscription = null;
+        if (plan is not null)
+        {
+            var now = DateTime.UtcNow;
+            var trialEnds = plan.TrialDays > 0 ? now.AddDays(plan.TrialDays) : (DateTime?)null;
+            subscription = new SaasSubscription
+            {
+                TenantId = tenantRecord.Id, OrganizationId = organization.Id, SaasPlanId = plan.Id,
+                Status = trialEnds.HasValue ? SaasSubscriptionStatuses.Trial : SaasSubscriptionStatuses.Active,
+                BillingInterval = billingInterval, CurrencyCode = currency, CurrentPeriodStartUtc = now,
+                CurrentPeriodEndUtc = billingInterval == SaasBillingIntervals.Annual ? now.AddYears(1) : now.AddMonths(1),
+                TrialEndsAtUtc = trialEnds
+            };
+            db.AddRange(subscription, new SaasBillingAccount
+            {
+                TenantId = tenantRecord.Id, OrganizationId = organization.Id, LegalName = legalName,
+                BillingEmail = ownerEmail, CurrencyCode = currency, CountryCode = country
+            });
+        }
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return (new
+        {
+            tenantRecord.Id, tenantRecord.Name, tenantRecord.Slug, organizationId = organization.Id,
+            branchId = branch.Id, ownerId = owner.Id, owner.Email, invitationPath,
+            subscriptionStatus = subscription?.Status ?? "unassigned"
+        }, null);
     }
 
     public async Task<object[]> GetPlansAsync(CancellationToken ct) =>
@@ -107,3 +225,4 @@ public sealed class SaasAdministrationService(AppDbContext db, TenantContext ten
 
 public sealed record CreateSaasPlanRequest(string Code, string Name, string? Description, string Status, int TrialDays, int GracePeriodDays, int DisplayOrder, bool IsPublic, string CurrencyCode, string BillingInterval, decimal Amount);
 public sealed record ActivateSaasSubscriptionRequest(Guid TenantId, Guid OrganizationId, Guid PlanId, string BillingInterval, string CurrencyCode, string BillingEmail);
+public sealed record ProvisionTenantRequest(string TenantName, string LegalName, string TradingName, string OwnerName, string OwnerEmail, string BranchName, string BranchCode, string? City, string CountryCode, string CurrencyCode, string Language, string TimeZone, Guid? PlanId, string BillingInterval);

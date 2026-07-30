@@ -7,6 +7,11 @@ public static class SaasAdministrationEndpoints
         var group = app.MapGroup("/api/v1/platform").WithTags("Platform administration");
         group.MapGet("/overview", (SaasAdministrationService service, CancellationToken ct) => service.GetOverviewAsync(ct)).RequireAuthorization("platform.dashboard.read");
         group.MapGet("/tenants", (SaasAdministrationService service, CancellationToken ct) => service.GetTenantsAsync(ct)).RequireAuthorization("platform.tenants.read");
+        group.MapPost("/tenants", async (ProvisionTenantRequest request, SaasAdministrationService service, CancellationToken ct) =>
+        {
+            var (result, error) = await service.ProvisionTenantAsync(request, ct);
+            return error is null ? Results.Created("/api/v1/platform/tenants", result) : Results.BadRequest(new { error });
+        }).RequireAuthorization("platform.tenants.manage");
         group.MapGet("/plans", (SaasAdministrationService service, CancellationToken ct) => service.GetPlansAsync(ct)).RequireAuthorization("platform.plans.read");
         group.MapPost("/plans", async (CreateSaasPlanRequest request, SaasAdministrationService service, CancellationToken ct) =>
         {

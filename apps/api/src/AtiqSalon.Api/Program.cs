@@ -94,6 +94,23 @@ try
         await db.SaveChangesAsync(ct);
         return Results.Accepted(value: new { message = "Registration accepted. Verify the email before signing in." });
     }).AllowAnonymous();
+    auth.MapPost("/accept-invitation", async (AcceptInvitationRequest request, AppDbContext db, IPasswordHasher<User> hasher, CancellationToken ct) =>
+    {
+        if (request.Password.Length < 12)
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["password"] = ["Password must contain at least 12 characters."] });
+        var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Token.Trim())));
+        var user = await db.Users.IgnoreQueryFilters().SingleOrDefaultAsync(x => x.EmailVerificationToken == tokenHash && x.Status == "invited", ct);
+        if (user is null || user.CreatedAtUtc < DateTimeOffset.UtcNow.AddDays(-7))
+            return Results.ValidationProblem(new Dictionary<string, string[]> { ["invitation"] = ["This invitation is invalid or has expired."] });
+        user.PasswordHash = hasher.HashPassword(user, request.Password);
+        user.Status = "active";
+        user.EmailVerified = true;
+        user.EmailVerificationToken = null;
+        user.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        db.AuditEvents.Add(new AuditEvent { TenantId = user.TenantId, ActorUserId = user.Id, Action = "tenant.owner.invitation_accepted", EntityType = "User", EntityId = user.Id.ToString(), Source = "api", OccurredAtUtc = DateTimeOffset.UtcNow });
+        await db.SaveChangesAsync(ct);
+        return Results.Ok(new { message = "Account activated. You can now sign in." });
+    }).AllowAnonymous();
     auth.MapPost("/login", async (LoginRequest request, AppDbContext db, IPasswordHasher<User> hasher, HttpContext http, CancellationToken ct) =>
     {
         var email = request.Email.Trim().ToLowerInvariant();
@@ -161,4 +178,5 @@ finally { Log.CloseAndFlush(); }
 public partial class Program;
 public sealed record RegisterRequest(string Email, string Password, string DisplayName, string OrganizationName, string CountryCode = "AE", string Currency = "AED", string Language = "en", string TimeZone = "Asia/Dubai");
 public sealed record LoginRequest(string Email, string Password);
+public sealed record AcceptInvitationRequest(string Token, string Password);
 public sealed record CreateBranchRequest(Guid OrganizationId, string Name, string Code, string CountryCode, string TimeZone, string? City);

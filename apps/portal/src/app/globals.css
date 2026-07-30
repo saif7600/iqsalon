@@ -2058,6 +2058,8 @@ a {
 /* Isolated SaaS control plane */
 .platform-workspace { display: grid; gap: 1rem; }
 .platform-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.platform-heading-actions { display: flex; gap: .5rem; }
+.platform-heading-actions .button { display: inline-flex; align-items: center; gap: .4rem; white-space: nowrap; }
 .platform-heading h1 { margin: .1rem 0 .3rem; font-size: clamp(1.55rem, 2.5vw, 2.15rem); letter-spacing: -.04em; }
 .platform-heading p { margin: 0; color: var(--color-muted); }
 .platform-heading .eyebrow { color: var(--color-primary); font-size: .62rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
@@ -2092,10 +2094,31 @@ a {
 .platform-access-state svg { color: var(--color-primary); }
 .platform-access-state h2, .platform-access-state p { margin: 0; }
 .platform-access-state p { color: var(--color-muted); }
+.platform-alert { padding: .75rem 1rem; border: 1px solid color-mix(in srgb, var(--color-danger) 35%, var(--color-border)); border-radius: .65rem; color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface)); font-size: .75rem; }
+.platform-success { display: grid; gap: .65rem; padding: 1rem; border: 1px solid color-mix(in srgb, var(--color-success) 35%, var(--color-border)); border-radius: .8rem; background: color-mix(in srgb, var(--color-success) 6%, var(--color-surface)); }
+.platform-success > div { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.platform-success > div:first-child { display: grid; justify-content: start; gap: .15rem; }
+.platform-success span, .platform-success small { color: var(--color-muted); font-size: .7rem; }
+.platform-success input { flex: 1; min-height: 2.5rem; }
+.platform-modal-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 1rem; background: rgb(15 23 42 / 48%); backdrop-filter: blur(5px); }
+.platform-modal { width: min(760px, 100%); max-height: calc(100dvh - 2rem); overflow-y: auto; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); box-shadow: 0 30px 90px rgb(15 23 42 / 28%); }
+.platform-modal > header { position: sticky; top: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.25rem; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+.platform-modal header span { color: var(--color-primary); font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.platform-modal header h2 { margin: .2rem 0; font-size: 1.25rem; }
+.platform-modal header p { margin: 0; color: var(--color-muted); font-size: .72rem; }
+.platform-modal header button { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border: 1px solid var(--color-border); border-radius: .55rem; background: var(--color-surface); cursor: pointer; }
+.platform-modal fieldset { margin: 0; padding: 1rem 1.25rem; border: 0; border-bottom: 1px solid var(--color-border); }
+.platform-modal legend { padding: 0; font-size: .78rem; font-weight: 800; }
+.platform-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem 1rem; margin-top: .75rem; }
+.platform-form-grid label { display: grid; gap: .35rem; font-size: .7rem !important; }
+.platform-form-grid .wide { grid-column: 1 / -1; }
+.platform-modal footer { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem 1.25rem; background: var(--color-elevated); }
+.platform-modal footer span { color: var(--color-muted); font-size: .65rem; }
+.platform-modal footer div { display: flex; gap: .5rem; }
 .spin { animation: platform-spin .8s linear infinite; }
 @keyframes platform-spin { to { transform: rotate(360deg); } }
 @media (max-width: 900px) { .platform-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } .platform-grid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .platform-metrics { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .platform-metrics, .platform-form-grid { grid-template-columns: 1fr; } .platform-heading, .platform-success > div, .platform-modal footer { align-items: stretch; flex-direction: column; } .platform-heading-actions, .platform-modal footer div { display: grid; grid-template-columns: 1fr 1fr; } .platform-form-grid .wide { grid-column: auto; } }
 
 /* Dense operating header and booking workspace */
 .portal-header {
