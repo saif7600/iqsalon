@@ -303,6 +303,13 @@ export function RecordsWorkspace({
                       required
                     />
                   </FormField>
+                  <label className="choice-card field-wide">
+                    <input name="onlineBookingEnabled" type="checkbox" />
+                    <span>
+                      Available for online booking
+                      <small>Customers can select this service from the public booking experience.</small>
+                    </span>
+                  </label>
                 </FormSection>
               )}
               {module !== "services" && (
@@ -344,7 +351,7 @@ export function RecordsWorkspace({
                   </FormField>
                 </>
               )}
-              {(module === "services" || module === "staff") && (
+              {module === "staff" && (
                 <label className="choice-card field-wide">
                   <input name="onlineBookingEnabled" type="checkbox" />
                   <span>
