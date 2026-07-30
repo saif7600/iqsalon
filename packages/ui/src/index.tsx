@@ -102,18 +102,59 @@ export function FormField({
   label,
   htmlFor,
   error,
+  hint,
+  required = false,
   children,
 }: {
   label: string;
   htmlFor: string;
   error?: string;
+  hint?: string;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
-    <div className="field">
-      <label htmlFor={htmlFor}>{label}</label>
+    <div className={`field${error ? " field-error" : ""}`}>
+      <label htmlFor={htmlFor}>
+        {label}
+        {required ? <span aria-hidden="true"> *</span> : null}
+      </label>
       {children}
-      {error ? <p role="alert">{error}</p> : null}
+      {hint && !error ? <p className="field-hint">{hint}</p> : null}
+      {error ? <p className="field-message" role="alert">{error}</p> : null}
     </div>
+  );
+}
+
+export function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <fieldset className="form-section">
+      <legend>{title}</legend>
+      {description ? <p className="form-section-copy">{description}</p> : null}
+      <div className="form-grid">{children}</div>
+    </fieldset>
+  );
+}
+
+export function FormActions({
+  children,
+  note,
+}: {
+  children: ReactNode;
+  note?: string;
+}) {
+  return (
+    <footer className="form-actions">
+      {note ? <p>{note}</p> : <span />}
+      <div>{children}</div>
+    </footer>
   );
 }

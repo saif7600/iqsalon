@@ -7,6 +7,9 @@ import {
   Button,
   Card,
   ErrorState,
+  FormActions,
+  FormField,
+  FormSection,
   LoadingState,
   PageTitle,
 } from "@atiqsalon/ui";
@@ -194,47 +197,73 @@ export function RecordsWorkspace({
         !canCreate ? (
           <ErrorState message="You do not have permission to create this record." />
         ) : (
-          <Card>
+          <Card className="record-form-shell">
             <form className="record-form" onSubmit={submit}>
+              <FormSection
+                title={
+                  module === "customers" || module === "staff"
+                    ? "Personal information"
+                    : "Record details"
+                }
+                description={
+                  module === "customers"
+                    ? "Add the customer details your reception team will use for bookings and communication."
+                    : module === "staff"
+                      ? "Create the team member's operational profile. Access permissions are managed separately."
+                      : `Define the ${labels[module].slice(0, -1).toLowerCase()} as it should appear across the salon.`
+                }
+              >
               {module === "staff" || module === "customers" ? (
                 <>
-                  <label>
-                    First name
-                    <input name="firstName" required />
-                  </label>
-                  <label>
-                    Last name
-                    <input name="lastName" required />
-                  </label>
+                  <FormField label="First name" htmlFor="firstName" required>
+                    <input id="firstName" name="firstName" autoComplete="given-name" required />
+                  </FormField>
+                  <FormField label="Last name" htmlFor="lastName" required>
+                    <input id="lastName" name="lastName" autoComplete="family-name" required />
+                  </FormField>
                 </>
               ) : (
-                <label>
-                  Name
-                  <input name="name" required />
-                </label>
+                <FormField
+                  label={module === "services" ? "Service name" : "Resource name"}
+                  htmlFor="name"
+                  hint="Use a clear customer-facing name."
+                  required
+                >
+                  <input id="name" name="name" required />
+                </FormField>
               )}
               {module !== "customers" && (
-                <label>
-                  Code
-                  <input name="code" required />
-                </label>
+                <FormField
+                  label={module === "staff" ? "Employee code" : "Internal code"}
+                  htmlFor="code"
+                  hint="A short unique reference used in reports."
+                  required
+                >
+                  <input id="code" name="code" autoCapitalize="characters" required />
+                </FormField>
               )}
               {(module === "staff" || module === "customers") && (
-                <label>
-                  Email
-                  <input name="email" type="email" />
-                </label>
+                <FormField label="Email address" htmlFor="email" hint="Optional">
+                  <input id="email" name="email" type="email" autoComplete="email" />
+                </FormField>
               )}
               {module === "customers" && (
-                <label>
-                  Phone
-                  <input name="phone" required />
-                </label>
+                <FormField
+                  label="Mobile number"
+                  htmlFor="phone"
+                  hint="UAE country code +971 is applied automatically."
+                  required
+                >
+                  <input id="phone" name="phone" type="tel" autoComplete="tel-national" placeholder="50 123 4567" required />
+                </FormField>
               )}
+              </FormSection>
               {module === "services" && (
-                <>
-                  <label>
-                    Category
+                <FormSection
+                  title="Duration and pricing"
+                  description="Set the operational timing and standard selling price."
+                >
+                  <FormField label="Category" htmlFor="categoryId" required>
                     <select name="categoryId" required>
                       <option value="">Select category</option>
                       {categories.map((item) => (
@@ -243,42 +272,45 @@ export function RecordsWorkspace({
                         </option>
                       ))}
                     </select>
-                  </label>
-                  <label>
-                    Duration minutes
+                  </FormField>
+                  <FormField label="Service duration" htmlFor="durationMinutes" hint="Minutes" required>
                     <input
+                      id="durationMinutes"
                       name="durationMinutes"
                       type="number"
                       min="1"
                       defaultValue="45"
                       required
                     />
-                  </label>
-                  <label>
-                    Cleanup minutes
+                  </FormField>
+                  <FormField label="Cleanup time" htmlFor="cleanupMinutes" hint="Buffer before the next booking, in minutes." required>
                     <input
+                      id="cleanupMinutes"
                       name="cleanupMinutes"
                       type="number"
                       min="0"
                       defaultValue="10"
                       required
                     />
-                  </label>
-                  <label>
-                    Base price
+                  </FormField>
+                  <FormField label="Standard price" htmlFor="basePrice" hint="AED, before any discount." required>
                     <input
+                      id="basePrice"
                       name="basePrice"
                       type="number"
                       min="0"
                       step="0.01"
                       required
                     />
-                  </label>
-                </>
+                  </FormField>
+                </FormSection>
               )}
               {module !== "services" && (
-                <label>
-                  Branch
+                <FormSection
+                  title="Operational assignment"
+                  description="Choose where this record is primarily managed."
+                >
+                <FormField label={module === "customers" ? "Preferred branch" : "Home branch"} htmlFor="branchId" required>
                   <select name="branchId" required>
                     {branches.map((item) => (
                       <option key={item.id} value={item.id}>
@@ -286,12 +318,10 @@ export function RecordsWorkspace({
                       </option>
                     ))}
                   </select>
-                </label>
-              )}
+                </FormField>
               {module === "resources" && (
                 <>
-                  <label>
-                    Type
+                  <FormField label="Resource type" htmlFor="type" required>
                     <select name="type">
                       <option>Chair</option>
                       <option>Room</option>
@@ -301,34 +331,45 @@ export function RecordsWorkspace({
                       <option>Vehicle</option>
                       <option>Other</option>
                     </select>
-                  </label>
-                  <label>
-                    Capacity
+                  </FormField>
+                  <FormField label="Simultaneous capacity" htmlFor="capacity" hint="How many bookings can use this resource at once." required>
                     <input
+                      id="capacity"
                       name="capacity"
                       type="number"
                       min="1"
                       defaultValue="1"
                       required
                     />
-                  </label>
+                  </FormField>
                 </>
               )}
               {(module === "services" || module === "staff") && (
-                <label className="check">
-                  <input name="onlineBookingEnabled" type="checkbox" />{" "}
-                  Available online
+                <label className="choice-card field-wide">
+                  <input name="onlineBookingEnabled" type="checkbox" />
+                  <span>
+                    Available for online booking
+                    <small>Customers can select this option from the public booking experience.</small>
+                  </span>
                 </label>
               )}
               {module === "resources" && (
-                <label className="check">
-                  <input name="onlineBookingVisible" type="checkbox" /> Visible
-                  online
+                <label className="choice-card field-wide">
+                  <input name="onlineBookingVisible" type="checkbox" />
+                  <span>
+                    Visible online
+                    <small>Show this resource where the booking experience supports resource selection.</small>
+                  </span>
                 </label>
               )}
-              <Button type="submit">
-                Create {labels[module].slice(0, -1).toLowerCase()}
-              </Button>
+              </FormSection>
+              )}
+              <FormActions note="Required fields are marked with an asterisk.">
+                <a className="button secondary" href={`/${module}`}>Cancel</a>
+                <Button type="submit">
+                  Create {labels[module].slice(0, -1).toLowerCase()}
+                </Button>
+              </FormActions>
             </form>
           </Card>
         )
