@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
+  async redirects() {
+    return [
+      {
+        source: "/sign-in",
+        destination: "/login",
+        permanent: true,
+      },
+      {
+        source: "/sign-in/:path*",
+        destination: "/login",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
